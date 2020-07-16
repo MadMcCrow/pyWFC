@@ -10,9 +10,27 @@
 # OutputSize
 # NumberOfIterations
 
+class Colors: 
+    LAND     = '\x1b[6;30;42m'
+    SEA      = '\x1b[6;30;44m'
+    BEACH    = '\x1b[1;36;43m'
+    MOUNTAIN = '\x1b[6;7;70m'
 
-# List of possibilities :
-Tileset = ['L','W','B','M']
+# the type of tiles available
+class Types :
+
+    # The Actual representation of that type
+    Value = None
+    Color = None
+
+    def __init__(self , color, letter) :  
+        self.Color = color
+        self.Value = letter
+
+    def __repr__(self):
+         return str( self.Color  + self.Value + '\x1b[0m') 
+         
+
 
 
 class IVec2D:
@@ -23,44 +41,114 @@ class IVec2D:
         self.X = x
         self.Y = y
 
-def randomIVec2D(MaxSize : IVec2D) :
+    def __repr__(self):
+        return "{" + str("{X},{Y}").format(X=self.X, Y=self.Y) + "}"
+
+def randomIVec2D(MaxSize : IVec2D) -> IVec2D :
     return IVec2D(randrange(MaxSize.X), randrange(MaxSize.Y))
 
 
 class Tile :
-    Value = None
 
-    def collapse(self, idx) : 
-        self.Value = list(filter(lambda remainder: (remainder%Tile.Tileset.size() == idx) , Tile.Tileset))
+    LAND      = Types(Colors.LAND,     'L')
+    SEA       = Types(Colors.SEA,      'W')
+    BEACH     = Types(Colors.BEACH,    'B')
+    MOUNTAIN  = Types(Colors.MOUNTAIN, 'M')
+
+
+    # List of possibilities :
+    Tileset = [LAND,SEA, BEACH,MOUNTAIN]
+
+
+    # the types of tile this could be 
+    TypeList = None
+
+    def collapse(self, idx : int) : 
+        self.TypeList = list(filter(lambda x: ( self.TypeList[idx] == x),  self.TypeList))
     
     def __init__(self) :
-        self.Value = Tile.Tileset
+        self.TypeList = Tile.Tileset
 
     def __repr__(self):
-         return self.Value.__repr__()
+        if len(self.TypeList) == 1 :
+            return self.TypeList[0].__repr__()
+        else :
+            retval = "{"
+            for type_itr in self.TypeList :
+                retval += type_itr.__repr__()
+            retval += "}"
+            return retval
+
+    def fixedValue(self) :
+        if len(self.TypeList) != 1 :
+            raise ValueError('this tile is not collapsed, or not set this is wrong')
+        return self.TypeList[0]
 
 class Grid :
 
     Values = None
     Size = None
 
+    def __init__(self, size : IVec2D): 
+        print(range(size.X))
+        self.Size = size
+        rows=[] 
+        for i in range(size.X):
+            columns=[] 
+            for j in range(size.Y):
+                tile = Tile()
+                tile.collapse(0)
+                columns.append(tile)
+            rows.append(columns)
+        self.Values =rows
+
+    def at(self, pos : IVec2D)  -> Tile:
+        return self.Values[pos.X][pos.Y]
+
+    def __repr__(self):
+        retval = str()
+        for row in self.Values: 
+            for col in row :
+                 retval = retval + col.__repr__()
+            retval = retval +'\n' 
+        return retval
+
+
+class OutputGrid(Grid) :
+
     def __init__(self, output_size : IVec2D): 
         self.Size = output_size
         rows=[] 
-        columns=[] 
         for i in range(output_size.X):
+            columns=[] 
             for j in range(output_size.Y):
                 columns.append(Tile())
-        rows.append(columns)
+            rows.append(columns)
         self.Values =rows
 
-    def at(self, pos : IVec2D)  :
-        return Values[pos.X][pos.Y]
 
-    def __repr__(self):
-         return self.Values.__repr__()
+
+class Pattern(Grid):
+
+    # the tile the pattern resolve around
+    Center = None
+
+
+def findPatternInGrid(input: Grid) -> list:
+    #lets get all patterns for every
+    for i in range(Grid.Size.X):
+        for j in range(Grid.Size.Y):
+            print (Grid.at(IVec2(i,j)))
+
+        
+
+    
+
+
        
 
 
-Output = Grid(IVec2D(10,10))
+Output = OutputGrid(IVec2D(4,4))
+print(Output)
+Output.at(IVec2D(0,0)).collapse(0)
 print(Output)
