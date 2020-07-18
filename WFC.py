@@ -1,3 +1,7 @@
+## includes
+from math import ceil
+from math import floor
+ 
  #  FindPattern
  ## setup indices
  ## extend the grid (make it loopable)
@@ -17,7 +21,7 @@ class Colors:
     MOUNTAIN = '\x1b[6;7;70m'
 
 # the type of tiles available
-class Types :
+class TileType :
 
     # The Actual representation of that type
     Value = None
@@ -27,9 +31,11 @@ class Types :
         self.Color = color
         self.Value = letter
 
-    def __repr__(self):
-         return str( self.Color  + self.Value + '\x1b[0m') 
+    def __repr__(self)      :
+        return str( self.Color  + self.Value + '\x1b[0m') 
          
+    def __eq__(self, other) :
+        return self.Value == other.Value
 
 
 
@@ -50,15 +56,14 @@ def randomIVec2D(MaxSize : IVec2D) -> IVec2D :
 
 class Tile :
 
-    LAND      = Types(Colors.LAND,     'L')
-    SEA       = Types(Colors.SEA,      'W')
-    BEACH     = Types(Colors.BEACH,    'B')
-    MOUNTAIN  = Types(Colors.MOUNTAIN, 'M')
+    LAND      = TileType(Colors.LAND,     'L')
+    SEA       = TileType(Colors.SEA,      'W')
+    BEACH     = TileType(Colors.BEACH,    'B')
+    MOUNTAIN  = TileType(Colors.MOUNTAIN, 'M')
 
 
     # List of possibilities :
     Tileset = [LAND,SEA, BEACH,MOUNTAIN]
-
 
     # the types of tile this could be 
     TypeList = None
@@ -68,6 +73,9 @@ class Tile :
     
     def __init__(self) :
         self.TypeList = Tile.Tileset
+
+    def __init__(self, val : TileType) :
+        self.TypeList = [val]
 
     def __repr__(self):
         if len(self.TypeList) == 1 :
@@ -84,26 +92,26 @@ class Tile :
             raise ValueError('this tile is not collapsed, or not set this is wrong')
         return self.TypeList[0]
 
+    
+def findTypeFromChar(char : str) -> TileType :
+    matches = [x for x in Tile.Tileset if  x.Value == char[0]]
+    if len(matches) == 1    :
+        return matches[0]
+    else                    :
+        raise ValueError('there was no type with this Char')
+
+    
+
 class Grid :
 
     Values = None
     Size = None
 
     def __init__(self, size : IVec2D): 
-        print(range(size.X))
         self.Size = size
-        rows=[] 
-        for i in range(size.X):
-            columns=[] 
-            for j in range(size.Y):
-                tile = Tile()
-                tile.collapse(0)
-                columns.append(tile)
-            rows.append(columns)
-        self.Values =rows
 
     def at(self, pos : IVec2D)  -> Tile:
-        return self.Values[pos.X][pos.Y]
+        return self.Values[pos.X % Size.X][pos.Y % Size.Y]
 
     def __repr__(self):
         retval = str()
@@ -113,6 +121,48 @@ class Grid :
             retval = retval +'\n' 
         return retval
 
+    def __eq__(self, other) :
+        return self.Values == other.Values
+
+
+def subGrid(grid : Grid, begin :IVec2D, end : IVec2D) -> Grid:
+    Size = IVec2D(end.X - begin.X, end.Y - begin.Y)
+    retval = Grid(Size)
+    row = []
+    columns =[] 
+    for i in range(begin.X, end.X):
+            columns = []
+            for j in range(begin.Y, end.Y):
+                columns.append(grid.at(IVec2D(i,j)))
+            row.append(columns)
+    
+
+
+
+
+
+def gridFromFile(file_url : str) -> Grid:
+    f = open(file_url,"rt")
+    input_text =  f.read()
+    f.close()
+    columns=[]
+    rows   =[]
+    line_count   = 0
+    column_count = 0
+    for char in input_text :
+        if char == '\n' and len(columns) > 0 :
+            line_count  += 1
+            column_count = 0
+            rows.append(columns)
+            columns=[]
+        else :
+            column_count+= 1
+            columns.append(Tile(findTypeFromChar(char)))
+    retval = Grid(IVec2D(column_count,line_count ))
+    retval.Values = rows
+    return retval
+    
+    
 
 class OutputGrid(Grid) :
 
@@ -133,22 +183,21 @@ class Pattern(Grid):
     # the tile the pattern resolve around
     Center = None
 
+    def __init__(self, grid : Grid, center : Tile) :
+        Grid.__init__(self, grid.Size)
+        self.Values = grid.Values
 
-def findPatternInGrid(input: Grid) -> list:
+def findPatternInGrid(input: Grid, pattern_size : IVec2D) -> list:
     #lets get all patterns for every
-    for i in range(Grid.Size.X):
-        for j in range(Grid.Size.Y):
-            print (Grid.at(IVec2(i,j)))
-
-        
-
-    
-
-
-       
+    all_patterns = []
+    for i in range(Grid.Size.X)     :
+        for j in range(Grid.Size.Y) :
+            top_left     = IVec2D( i - floor(pattern_size.X / 2.0), j - floor(pattern_size.Y/2.0))
+            bottom_right = IVec2D( i + ceil(pattern_size.X / 2.0),  j + ceil(pattern_size.Y/2.0))
+            new_pattern = Pattern(subGrid(input, top_left, bottom_right), Grid.at(IVec2D(i,j)))
+            if not new_pattern in all_patterns :
+                all_patterns.append(new_pattern)
 
 
-Output = OutputGrid(IVec2D(4,4))
-print(Output)
-Output.at(IVec2D(0,0)).collapse(0)
-print(Output)
+input = gridFromFile('input')
+print(input)
