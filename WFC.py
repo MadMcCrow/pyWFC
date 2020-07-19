@@ -87,6 +87,11 @@ class Tile :
             retval += "}"
             return retval
 
+    
+    def __eq__(self, other) :
+        return self.TypeList == other.TypeList
+
+
     def fixedValue(self) :
         if len(self.TypeList) != 1 :
             raise ValueError('this tile is not collapsed, or not set this is wrong')
@@ -111,7 +116,7 @@ class Grid :
         self.Size = size
 
     def at(self, pos : IVec2D)  -> Tile:
-        return self.Values[pos.X % Size.X][pos.Y % Size.Y]
+        return self.Values[pos.X % self.Size.X][pos.Y % self.Size.Y]
 
     def __repr__(self):
         retval = str()
@@ -123,6 +128,8 @@ class Grid :
 
     def __eq__(self, other) :
         return self.Values == other.Values
+         
+
 
 
 def subGrid(grid : Grid, begin :IVec2D, end : IVec2D) -> Grid:
@@ -135,11 +142,9 @@ def subGrid(grid : Grid, begin :IVec2D, end : IVec2D) -> Grid:
             for j in range(begin.Y, end.Y):
                 columns.append(grid.at(IVec2D(i,j)))
             row.append(columns)
+    retval.Values = row
+    return retval
     
-
-
-
-
 
 def gridFromFile(file_url : str) -> Grid:
     f = open(file_url,"rt")
@@ -187,18 +192,38 @@ class Pattern(Grid):
         Grid.__init__(self, grid.Size)
         self.Values = grid.Values
 
-def findPatternInGrid(input: Grid, pattern_size : IVec2D) -> list:
+    def __eq__(self, other):
+        if  self.Values == other.Values :
+            return True
+        return False
+
+def findPatternInGrid(input_grid: Grid, pattern_size : IVec2D) -> list:
     #lets get all patterns for every
     all_patterns = []
-    for i in range(Grid.Size.X)     :
-        for j in range(Grid.Size.Y) :
+    for i in range(input_grid.Size.X)     :
+        for j in range(input_grid.Size.Y) :
             top_left     = IVec2D( i - floor(pattern_size.X / 2.0), j - floor(pattern_size.Y/2.0))
             bottom_right = IVec2D( i + ceil(pattern_size.X / 2.0),  j + ceil(pattern_size.Y/2.0))
-            new_pattern = Pattern(subGrid(input, top_left, bottom_right), Grid.at(IVec2D(i,j)))
-            if not new_pattern in all_patterns :
-                all_patterns.append(new_pattern)
+            new_pattern = Pattern(subGrid(input_grid, top_left, bottom_right), input_grid.at(IVec2D(i,j)))
+            all_patterns.append(new_pattern)
 
+    weighted_pattern_list = []
+    for pattern in all_patterns :
+        stored = False
+        for weighted in weighted_pattern_list:
+            if pattern == weighted[0] :
+                weighted[1] += 1
+                stored = True
+                break
+        if not stored :
+            weighted_pattern_list.append([pattern,1])
+    # we have the info we want
+    return weighted_pattern_list
 
-input = gridFromFile('input')
-patternlist = findPatternInGrid(input)
-print(input)
+patternsize = IVec2D(3,3)
+grid = gridFromFile('input')
+print(grid)
+patternlist = findPatternInGrid(grid, patternsize)
+for pattern in patternlist :
+    print(pattern[1])
+    print(pattern[0])
