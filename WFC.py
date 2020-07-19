@@ -200,4 +200,5 @@ def findPatternInGrid(input: Grid, pattern_size : IVec2D) -> list:
 
 
 input = gridFromFile('input')
+patternlist = findPatternInGrid(input)
 print(input)
