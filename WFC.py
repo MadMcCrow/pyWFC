@@ -191,6 +191,7 @@ class Pattern(Grid):
     def __init__(self, grid : Grid, center : Tile) :
         Grid.__init__(self, grid.Size)
         self.Values = grid.Values
+        self.Center = center
 
     def __eq__(self, other):
         if  self.Values == other.Values :
@@ -220,10 +221,24 @@ def findPatternInGrid(input_grid: Grid, pattern_size : IVec2D) -> list:
     # we have the info we want
     return weighted_pattern_list
 
+def findPatternsInList(input_list : list, input_type : TileType ) -> list :
+    retval = []
+    for pattern in input_list :
+        if not isinstance(pattern, Pattern) :
+            raise ValueError("not a pattern")
+        if pattern.Center.fixedValue() == input_type :
+            retval.append(pattern)
+    return retval
+
+    
+
 patternsize = IVec2D(3,3)
 grid = gridFromFile('input')
 print(grid)
-patternlist = findPatternInGrid(grid, patternsize)
-for pattern in patternlist :
-    print(pattern[1])
-    print(pattern[0])
+weight_patternlist = findPatternInGrid(grid, patternsize)
+patternlist = [pat[0] for pat in weight_patternlist]
+print(patternlist)
+land_only = findPatternsInList(patternlist, Tile.LAND)
+for pattern in land_only :
+    print(pattern)
+
