@@ -2,6 +2,11 @@ from operator   import itemgetter
 from copy       import copy
 
 
+# error class for when it fails to be coherent
+class Math2DError(Exception):
+        pass
+
+
 # 2D int vector
 class IVec2D (tuple):
 
@@ -9,34 +14,65 @@ class IVec2D (tuple):
     Y = property(itemgetter(1))
 
     def __new__(self, x, y):
-        return tuple.__new__(IVec2D, (x, y))
+        return tuple.__new__(IVec2D, (round(x), round(y)))
 
     def __repr__(self):
         return "{" + str("{X},{Y}").format(X=self[0], Y=self[0]) + "}"
 
+    def __truediv__(self, other) :
+        if isinstance(other, float) or isinstance(other, int) :
+            return IVec2D(self.X / Other, self.Y / Other)
+        elif isinstance(other,IVec2D ):
+            return IVec2D(self.X / Other.X), self.Y / Other.Y)
+        else:
+            raise Math2DError("cannot divide {a} by {b}".format(a = self, b = other))
 
+    def __mul__(self, other) :
+        if isinstance(other, float) or isinstance(other, int) :
+            return IVec2D(self.X * Other, self.Y * Other)
+        elif isinstance(other,IVec2D ):
+            return IVec2D(self.X * Other.X), self.Y * Other.Y)
+        else:
+            raise Math2DError("cannot multiply {a} by {b}".format(a = self, b = other))
+
+    def __add__(self, other) :
+        if isinstance(other, float) or isinstance(other, int) :
+            return IVec2D(self.X + Other, self.Y + Other)
+        elif isinstance(other,IVec2D ):
+            return IVec2D(self.X + Other.X), self.Y + Other.Y)
+        else:
+            raise Math2DError("cannot add {a} by {b}".format(a = self, b = other))
+
+    def __sub__(self, other) :
+        if isinstance(other, float) or isinstance(other, int) :
+            return IVec2D(self.X - Other, self.Y - Other)
+        elif isinstance(other,IVec2D ):
+            return IVec2D(self.X - Other.X), self.Y - Other.Y)
+        else:
+            raise Math2DError("cannot add {a} by {b}".format(a = self, b = other))
+        
 
 # 2D array class for readability
 class Array2D(list):
 
 
     # dimension of the array
-    Size  = None
+    _Size  = None
 
-    # list of items there should be Size.X * Size.Y
+    # list of items there should be _Size.X * _Size.Y
 
     def mod(self, x : int, y : int ) -> IVec2D  :
-        col = x % self.Size.X
-        row = y % self.Size.Y
+        col = x % self._Size.X
+        row = y % self._Size.Y
         return IVec2D(col, row)
 
     def idx(self, x : int, y : int) -> int      :
         (col, row) = self.mod(x,y)
-        return col + (row * self.Size.X)
+        return col + (row * self._Size.X)
 
     def end(self) -> IVec2D   :
-        col = self.Size.X -1
-        row = self.Size.Y -1
+        col = self._Size.X -1
+        row = self._Size.Y -1
         return IVec2D(col,row)
 
     # get the value of the items stored at a certain location
@@ -50,7 +86,7 @@ class Array2D(list):
         if input_list is not None :
             for idx in range(len(input_list)) :
                 self[idx] = copy(input_list[idx])
-        self.Size = size
+        self._Size = size
 
     def __setitem__(self, key : IVec2D, value):
         if isinstance(key, IVec2D) :
@@ -77,7 +113,7 @@ class Array2D(list):
         return s
 
     def __repr__(self):
-        return  super(Array2D, self).__repr__() + " of size " + str(self.Size)
+        return  super(Array2D, self).__repr__() + " of size " + str(self._Size)
 
     def __str__(self):
         if len(self) == 0 :
@@ -88,10 +124,10 @@ class Array2D(list):
         import re
         lda = lambda k : len(re.sub("[^a-z0-9]+","", repr(k), flags=re.IGNORECASE))
         maxlen = len(repr(max(self, key= lda )))
-        for idx in range((self.Size.X * self.Size.Y))    :
+        for idx in range((self._Size.X * self._Size.Y))    :
             elem = self[idx]
             retstr += str(elem).center(maxlen + len(str(elem)) - len(repr(elem)) )
-            if idx % self.Size.X == self.Size.X - 1         :
+            if idx % self._Size.X == self._Size.X - 1         :
                 retstr += '\n'
         return retstr
 
