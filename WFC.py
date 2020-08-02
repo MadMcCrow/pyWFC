@@ -162,35 +162,63 @@ class Pattern(Array2D)  :
         return weighted_pattern_list
 
 
-# a cell is an array2D pointing to a part the underlying grid.
-class cell (Array2D):
+# 2D int vector
+class WeightedPattern (tuple):
+
+    X = property(itemgetter(0))
+    Y = property(itemgetter(1))
+
+    def __new__(self, x, y):
+        return tuple.__new__(IVec2D, (x, y))
+
+    def __repr__(self):
+        return "{" + str("{X},{Y}").format(X=self[0], Y=self[0]) + "}"
+
+# a cell is part of a bigger grid and helps to find 
+class cell :
+
+    
 
     Entropy = 0
 
     def calculateEntropy(self) :
         return 0
 
-    @staticmethod
-    def makeCells() :
-        return 
+
+class Solver :
+    
+    PatternSize = [3,3]
+    OutputSize  = [20,20]
+
+    Patterns = []
+
+    Output = None
+    Cells  = None
+
+    def readInput( input_file : str) :
+        input_grid = Array2D.arrayFromFile(input_file, Element)
+        Patterns = Pattern.findPatternInGrid(grid, patternsize)
+        # normalise to get probability
+        for pat in Patterns :
+            pat[1] /=  len(Patterns)
+
+    def CreateGrid() : 
+        output_len = outputsize[1] * outputsize[0]
+        Output = Array2D(outputsize, [Element(Element.Tileset)] * output_len )
+
+    def CreateCells():
+
+
 
 
 
   
 
-patternsize = [3,3]
-outputsize  = [20,20]
-output_len = outputsize[1] * outputsize[0]
 
-grid = Array2D.arrayFromFile('input', Element)
-print(grid)
 
-weight_patternlist = Pattern.findPatternInGrid(grid, patternsize)
 
-patternlist = [pat[0] for pat in weight_patternlist]
-print(len(patternlist))
-#for pattern in patternlist :
-#    print(pattern)
+
+
 
 
 
