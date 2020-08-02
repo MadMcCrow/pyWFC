@@ -177,7 +177,9 @@ class WeightedPattern (tuple):
 # a cell is part of a bigger grid and helps to find 
 class cell :
 
-    
+    Dimension = None
+
+    CenterPos = None
 
     Entropy = 0
 
