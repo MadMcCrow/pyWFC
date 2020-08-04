@@ -50,6 +50,12 @@ class IVec2D (tuple):
             return IVec2D(self.X - Other.X), self.Y - Other.Y)
         else:
             raise Math2DError("cannot add {a} by {b}".format(a = self, b = other))
+
+
+
+# turn index into array position
+def PositionFromIndexAndSize(idx : int , size : IVec2D) -> IVec2D:
+        return  IVec2D( idx % size.X, (idx // size.X) % size.Y )
         
 
 # 2D array class for readability
@@ -157,3 +163,6 @@ class Array2D(list):
                 items.append(elem_cls(char))
         retval = Array2D([col_c, row_c], items)
         return retval
+
+    def PositionFromIndex(self, idx : int ) -> IVec2D:
+        return  IVec2D( idx % self._Size.X, (idx //self._Size.X) % self._Size.Y )

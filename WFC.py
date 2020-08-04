@@ -1,6 +1,7 @@
 ## includes
 from array2D import IVec2D
 from array2D import Array2D
+from array2D import PositionFromIndexAndSize
 from math import ceil
 from math import floor
 from math import log
@@ -120,6 +121,7 @@ def findPatternsInGrid(input_grid: Array2D, pattern_size : IVec2D) -> list:
 class Cell :
 
     # class properties
+    _PatternLists = []
     _Dimension = None
     _CenterPos = None
     _LogBase   = 2
@@ -128,6 +130,11 @@ class Cell :
     Coord = None
     PossiblePatterns = []
     Entropy = 0
+
+    def __init__(self, coord )  :
+        self.Coord = coord
+
+
 
     def calculateEntropy(self) :
         self.Entropy = 0
@@ -151,18 +158,21 @@ class Solver :
     Output = None
     Cells  = None
 
-    def readInput( input_file : str) :
+    def readInput(self, input_file : str) :
         input_grid = Array2D.arrayFromFile(input_file, Element)
-        Patterns = Pattern.findPatternInGrid(grid, patternsize)
+        self.Patterns = Pattern.findPatternInGrid(input_grid, self._PatternSize)
 
-    def CreateGrid() : 
+    def CreateGrid(self) : 
         output_len = outputsize[1] * outputsize[0]
-        Output = Array2D(outputsize, [Element(Element.Tileset)] * output_len )
+        self.Output = Array2D(self._OutputSize, [Element(Element._ElemList)] * output_len )
 
-    def CreateCells():
-        Cell._Dimension = self._PatternSize()
-        Cell._CenterPos = _PatternSize / 2.0
-        Cells = (outputsize, [Element(Element.Tileset)] * output_len )
+    def CreateCells(self):
+        num = self._OutputSize.X * self._OutputSize.Y
+        Cell._Dimension = self._PatternSize
+        Cell._CenterPos = self._PatternSize / 2.0
+        self.Cells = [Cell(PositionFromIndexAndSize(idx)) for idx in range(num)]
+
+    
 
 
 
