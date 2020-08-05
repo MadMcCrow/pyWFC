@@ -21,33 +21,33 @@ class IVec2D (tuple):
 
     def __truediv__(self, other) :
         if isinstance(other, float) or isinstance(other, int) :
-            return IVec2D(self.X / Other, self.Y / Other)
+            return IVec2D(self.X / other, self.Y / other)
         elif isinstance(other,IVec2D ):
-            return IVec2D(self.X / Other.X), self.Y / Other.Y)
+            return IVec2D(self.X / other.X, self.Y / other.Y)
         else:
             raise Math2DError("cannot divide {a} by {b}".format(a = self, b = other))
 
     def __mul__(self, other) :
         if isinstance(other, float) or isinstance(other, int) :
-            return IVec2D(self.X * Other, self.Y * Other)
+            return IVec2D(self.X * other, self.Y * other)
         elif isinstance(other,IVec2D ):
-            return IVec2D(self.X * Other.X), self.Y * Other.Y)
+            return IVec2D(self.X * other.X, self.Y * other.Y)
         else:
             raise Math2DError("cannot multiply {a} by {b}".format(a = self, b = other))
 
     def __add__(self, other) :
         if isinstance(other, float) or isinstance(other, int) :
-            return IVec2D(self.X + Other, self.Y + Other)
+            return IVec2D(self.X + other, self.Y + other)
         elif isinstance(other,IVec2D ):
-            return IVec2D(self.X + Other.X), self.Y + Other.Y)
+            return IVec2D(self.X + other.X, self.Y + other.Y)
         else:
             raise Math2DError("cannot add {a} by {b}".format(a = self, b = other))
 
     def __sub__(self, other) :
         if isinstance(other, float) or isinstance(other, int) :
-            return IVec2D(self.X - Other, self.Y - Other)
+            return IVec2D(self.X - other, self.Y - other)
         elif isinstance(other,IVec2D ):
-            return IVec2D(self.X - Other.X), self.Y - Other.Y)
+            return IVec2D(self.X - other.X, self.Y - other.Y)
         else:
             raise Math2DError("cannot add {a} by {b}".format(a = self, b = other))
 

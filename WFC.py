@@ -2,6 +2,7 @@
 from array2D import IVec2D
 from array2D import Array2D
 from array2D import PositionFromIndexAndSize
+from operator   import itemgetter
 from math import ceil
 from math import floor
 from math import log
@@ -38,7 +39,7 @@ class Element(list):
    
     def collapse(self, to_remove : list) : 
         """  Remove possibilities of this element """
-        for t in self.to_remove :
+        for t in to_remove :
             if t in self :
                 self.remove(t)
         if len(self) == 0  :
@@ -75,7 +76,7 @@ class WeightedPattern (tuple):
         return tuple.__new__(WeightedPattern, (pattern, weight))
 
 
-def findPatternsInGrid(input_grid: Array2D, pattern_size : IVec2D) -> list:
+def findPatternPatternsInGrid(input_grid: Array2D, pattern_size : IVec2D) -> list:
     '''
     lets get all patterns contained
     in every 'pattern_size' block
@@ -138,13 +139,13 @@ class Cell :
 
     def calculateEntropy(self) :
         self.Entropy = 0
-        for wp in PossiblePatterns : 
+        for wp in self.PossiblePatterns : 
              self.Entropy -= wp.Weight * log(wp.Weight, Cell._LogBase)
 
     def getElements(self, grid : Array2D) -> Array2D :
-        (i,j) = Coord
-        top_left     = Coord - Cell._CenterPos
-        bottom_right = Coord + ((Cell._Dimension -1 ) - Cell._CenterPos)
+        #(i,j) = self.Coord
+        top_left     = self.Coord - Cell._CenterPos
+        bottom_right = self.Coord + ((Cell._Dimension -1 ) - Cell._CenterPos)
         return grid.sub(top_left, bottom_right)
         
 class Solver :
@@ -153,24 +154,28 @@ class Solver :
     _PatternSize = IVec2D(3,3)
     _OutputSize  = IVec2D(20,20)
 
-    # instance properties
+    # instance propertiespatternsize
     Patterns = []
     Output = None
     Cells  = None
 
     def readInput(self, input_file : str) :
         input_grid = Array2D.arrayFromFile(input_file, Element)
-        self.Patterns = Pattern.findPatternInGrid(input_grid, self._PatternSize)
+        self.Patterns = findPatternPatternsInGrid(input_grid, self._PatternSize)
 
     def CreateGrid(self) : 
-        output_len = outputsize[1] * outputsize[0]
+        output_len = self._OutputSize[1] * self._OutputSize[0]
         self.Output = Array2D(self._OutputSize, [Element(Element._ElemList)] * output_len )
 
     def CreateCells(self):
         num = self._OutputSize.X * self._OutputSize.Y
         Cell._Dimension = self._PatternSize
         Cell._CenterPos = self._PatternSize / 2.0
-        self.Cells = [Cell(PositionFromIndexAndSize(idx)) for idx in range(num)]
+        self.Cells = [Cell(PositionFromIndexAndSize(idx,self._OutputSize )) for idx in range(num)]
+
+    #def observe(self) :
+    #    for cell in cells :
+
 
     
 
