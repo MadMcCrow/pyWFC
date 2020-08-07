@@ -173,8 +173,17 @@ class Solver :
         Cell._CenterPos = self._PatternSize / 2.0
         self.Cells = [Cell(PositionFromIndexAndSize(idx,self._OutputSize )) for idx in range(num)]
 
-    #def observe(self) :
-    #    for cell in cells :
+    def observe(self, cellIndex : IVec2D) :
+        '''  
+        "observe" is check for all the possibly modified slots 
+        we only need to check in the region of the previously changed cell
+        ''' 
+        #top_left     = self.Coord - Cell._CenterPos
+        #bottom_right = self.Coord + ((Cell._Dimension -1 ) - Cell._CenterPos)
+        #toChangeCell = cells.sub(top_left, bottom_right)
+        #for cell in toChangeCell :
+        return
+
 
 
     
