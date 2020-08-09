@@ -1,3 +1,18 @@
+#!python 
+# Terrain.py
+'''
+MIT License
+
+Copyright (c) 2020 PERARD-G N.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+'''
+
 ## includes
 from array2D import IVec2D
 from array2D import Array2D
@@ -11,59 +26,60 @@ class Color:
     NONE     = '\x1b[0;1;0m'
 
 # helps transform an element into a nicer representation
-class Tile (str):
+class Tile :
 
-    Index = 0
+    Color = None
     Value = None
 
-    def __init__(self , index : int, letter : str, color = Colors.NONE : Color) :  
-        self += letter
-        self.Index = index
-        self.Value = color
+    def __init__(self , letter, color  ) :  
+        self.Value = letter
+        self.Color = color
 
     def __str__(self)       :
-        return str( self.Color  + self.Value + '\x1b[0m')  
+        return str( self.Color  + repr(self) + '\x1b[0m')  
 
     def __repr__(self)      :
-        return str(self.Value)
-        
+        return self.Value
+
     def __eq__(self, other) :
-        if isinstance(other, TileType) :
-            return self.Value == other.Value
-        elif isinstance(other, str) :
-            return other == self.Value 
+        if isinstance(other, Tile) :
+            return self == other
         else :
-            return False
+            return str(other) == self.Value 
 
 
-LAND      = TileType('L', Colors.LAND       )     
-SEA       = TileType('W', Colors.SEA        )      
-BEACH     = TileType('B', Colors.BEACH      )    
-MOUNTAIN  = TileType('M', Colors.MOUNTAIN   ) 
 
-TILESET = [LAND, SEA, BEACH, MOUNTAIN]
+    def __hash__(self) :
+        return hash(self.Value)
+
+LAND      = Tile( 'L', str(Color.LAND       ) )     
+SEA       = Tile( 'W', str(Color.SEA        ) )      
+BEACH     = Tile( 'B', str(Color.BEACH      ) )    
+MOUNTAIN  = Tile( 'M', str(Color.MOUNTAIN   ) ) 
+
+TILESET = set([LAND, SEA, BEACH, MOUNTAIN])
 
 # nicely print a Land Array
 def strLand(array : Array2D) :
-   if len(array) == 0 :
+    if len(array) == 0 :
             print("empty array")
             return
-        retstr = str()
-        # find longest of str and then make every element a str of that length and then return as multilines   
-        import re
-        lda = lambda k : len(re.sub("[^a-z0-9]+","", repr(k), flags=re.IGNORECASE))
-        maxlen = len(repr(max(array, key= lda )))
-        for idx in range((array._Size.X * array._Size.Y))    :
+    retstr = str()
+    # find longest of str and then make every element a str of that length and then return as multilines   
+    import re
+    #lda = lambda k : len(re.sub("[^a-z0-9]+","", repr(k), flags=re.IGNORECASE))
+    #maxlen = len(repr(max(array, key= lda )))
+    maxlen = 1
+    for idx in range((array._Size.X * array._Size.Y))    :
+        elemstr = "-"
+        elem = array[idx]
+        if len(elem) <= 1 :
+            for t in TILESET :
+                if t == list(elem)[0] :
+                    elemstr = str(t)
 
-            elem = array[idx]
-            if elem in TILESET:
-                elemstr = TILESET.index 
-            else:
-                elemstr = str(elem)
-            retstr += str(elemstr).center(maxlen + len(str(elemstr)) - len(repr(elemstr)) )
-
-            if idx % array._Size.X == array._Size.X - 1         :
-                retstr += '\n'
-                
-        return retstr
-
+        retstr += str(elemstr).center(maxlen + len(str(elemstr)) - len(repr(elemstr)) )
+        if idx % array._Size.X == array._Size.X - 1         :
+            retstr += '\n'
+            
+    return retstr

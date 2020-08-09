@@ -1,6 +1,21 @@
+#!python 
+# array2D.py
+'''
+MIT License
+
+Copyright (c) 2020 PERARD-G N.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+'''
+
 from operator   import itemgetter
 from copy       import copy
-
+from random     import randrange
 
 # error class for when it fails to be coherent
 class Math2DError(Exception):
@@ -89,9 +104,9 @@ class Array2D(list):
     def __init__(self, size : IVec2D, input_list = None) :  
         size = IVec2D(*size) # make sure its a IVec2
         super(Array2D, self).__init__(input_list)
-        if input_list is not None :
-            for idx in range(len(input_list)) :
-                self[idx] = copy(input_list[idx])
+        # if input_list is not None :
+        #    for idx in range(len(input_list)) :
+        #        self[idx] = copy(input_list[idx])
         self._Size = size
 
     def __setitem__(self, key : IVec2D, value):
@@ -136,6 +151,11 @@ class Array2D(list):
             if idx % self._Size.X == self._Size.X - 1         :
                 retstr += '\n'
         return retstr
+
+    def randomPosition(self) -> IVec2D :
+        col =  randrange(self._Size.X)
+        row =  randrange(self._Size.Y)
+        return IVec2D(col, row)
 
     #def __eq__(self, other) :
     #    return set(self).intersection(other) == set(self)
