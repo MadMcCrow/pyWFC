@@ -64,13 +64,12 @@ def strLand(array : Array2D) :
     if len(array) == 0 :
             print("empty array")
             return
-    retstr = str()
-    # find longest of str and then make every element a str of that length and then return as multilines   
+    retstr = ""
     import re
     #lda = lambda k : len(re.sub("[^a-z0-9]+","", repr(k), flags=re.IGNORECASE))
     #maxlen = len(repr(max(array, key= lda )))
     maxlen = 1
-    for idx in range((array._Size.X * array._Size.Y))    :
+    for idx in range((array.dim().X * array.dim().Y))    :
         elemstr = "-"
         elem = array[idx]
         if len(elem) <= 1 :
@@ -79,7 +78,7 @@ def strLand(array : Array2D) :
                     elemstr = str(t)
 
         retstr += str(elemstr).center(maxlen + len(str(elemstr)) - len(repr(elemstr)) )
-        if idx % array._Size.X == array._Size.X - 1         :
+        if idx % array.dim().X == array.dim().X - 1         :
             retstr += '\n'
             
     return retstr

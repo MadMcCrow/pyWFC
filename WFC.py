@@ -28,9 +28,10 @@ from random import random
 
 from array2D import IVec2D
 from array2D import Array2D
-from array2D import PositionFromIndexAndSize
 
 from Terrain import strLand
+
+from numpy      import array
 
 # error class for when it fails to be coherent
 class ImpossibleError(Exception):
@@ -97,23 +98,7 @@ class Element(set):
 
 
 # a simple grid containing a unique combination of elements
-class Pattern(Array2D)  :
-
-    def __init__(self, array) :
-        size = IVec2D(*array._Size) # make sure its a IVec2D
-        # populate with none
-        super(Pattern,self).__init__(size, array)
-
-    def __eq__ (self, other) :
-        if len(self) != len(other) :
-            raise ValueError ("two patterns are not same length") 
-        for idx in range(len(self)) :
-            if self[idx] != other[idx] : 
-                return False
-        return True
-
-    def __str__(self)   :
-        return strLand(self)
+class Pattern(Array2D)  : pass
 
 
 # Tuple to hold a pattern and a weight/probability for easy storage
@@ -133,11 +118,11 @@ def findPatternPatternsInGrid(input_grid: Array2D, pattern_size : IVec2D) -> lis
     '''
     pattern_size = IVec2D(*pattern_size)
     all_patterns = []
-    for i in range(input_grid._Size.X)     :
-        for j in range(input_grid._Size.Y) :
-            top_left     = [ i - floor(pattern_size.X / 2.0), j - floor(pattern_size.Y/2.0) ]
-            bottom_right = [ i + floor(pattern_size.X / 2.0),  j + floor(pattern_size.Y/2.0)  ]
-            new_pattern = Pattern(input_grid.sub(top_left, bottom_right))
+    for i in range(input_grid.dim().x)     :
+        for j in range(input_grid.dim().y) :
+            top_left     = [ i - floor(pattern_size.x / 2.0) , j - floor(pattern_size.y /2.0) ]
+            bottom_right = [ i + floor(pattern_size.x / 2.0) , j + floor(pattern_size.y /2.0) ]
+            new_pattern = input_grid.sub(top_left, bottom_right).view(Pattern)
             all_patterns.append(new_pattern)
 
     '''  
@@ -216,7 +201,7 @@ class Cell :
         (ex,ey)  = self.Coord + ((Cell._Dimension -1 ) - Cell._CenterPos)
         for y in range(by, ey + 1)  :
             for x in range(bx,ex + 1)   :
-                grid[IVec2D(x,y)] = Element(pattern.at(x - bx, y - by)) 
+                grid[IVec2D(x,y)] = Element(pattern[x - bx, y - by]) 
 
         
 class Solver :
@@ -236,17 +221,18 @@ class Solver :
     def readInput(self, input_file : str) :
         self.Input = Array2D.arrayFromFile(input_file, Element)
         Cell._PatternLists = findPatternPatternsInGrid( self.Input, self._PatternSize)
-        Element._ElemList = tuple(set(self.Input))
+        Element._ElemList = tuple(set(self.Input.tobytes()))
 
-    def createGrid(self) : 
-        output_len = self._OutputSize[1] * self._OutputSize[0]
-        self.Output = Array2D(self._OutputSize, [Element(*Element._ElemList)] * output_len )
+    def createGrid(self) :  
+        elem_list = list([[Element(*Element._ElemList)]*self._OutputSize[0] ] * self._OutputSize[1] )
+        self.Output = Array2D(elem_list)
 
     def createCells(self):
-        num = self._OutputSize.X * self._OutputSize.Y
         Cell._Dimension = self._PatternSize
         Cell._CenterPos = self._PatternSize / 2.0
-        self.Cells = Array2D(self._OutputSize, [Cell(PositionFromIndexAndSize(idx,self._OutputSize )) for idx in range(num)])
+        cells_list = [[Cell(IVec2D(x,y)) for x in range(self._OutputSize.x)] for y in range(self._OutputSize.y)]
+        self.Cells = Array2D(cells_list)
+        raise ValueError( "{}".format(self.Cells))
 
     #step 1
     def observe(self) :
@@ -309,7 +295,8 @@ class Solver :
     def run(self) :
         count = 0
         try :
-            self.LowestEntropy = self.Output.randomPosition() 
+
+            self.LowestEntropy = IVec2D(randrange(self.Output.dim().x), randrange(self.Output.dim().y))
             self.collapse()
             while self.End == False :
                 count +=1
