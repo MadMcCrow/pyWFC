@@ -16,6 +16,7 @@ furnished to do so, subject to the following conditions:
 
 from operator   import itemgetter
 from numpy      import ndarray
+from numpy      import asarray
 from numpy      import array
 from numpy      import array_equal
 
@@ -77,32 +78,58 @@ def PositionFromIndexAndSize(idx : int , size : IVec2D) -> IVec2D:
 class Array2D(ndarray):
 
     def dim(self) -> IVec2D:
-        return IVec2D(*self.shape)
+        try :
+            dimension = IVec2D(self.shape[0], self.shape[1])
+            return dimension
+        except IndexError : 
+            pass 
+            return IVec2D(self.shape[0], 0)
 
     # get a smaller portion of the array 
     def sub(self, begin : IVec2D, end : IVec2D):
         (bx,by) = begin[:2]
+        bx %= self.dim().x
+        by %= self.dim().y
         (ex,ey) = end[:2]
-        return self[bx:ex,by:ey]
+        ex %= self.dim().x
+        ey %= self.dim().y
+        raise ValueError("{}\n with begin = \n{}\n and end = \n{}\n".format(self[bx:ex ,by:ey], bx, ex))
+        return self[bx :ex ,by :ey]
 
 
-    def __new__( self, in_list : list ) :
-          return array(in_list).view(in_list[0])
+    def __new__(cls, in_list):
+        data_type   = type((in_list[0])[0]) if type(in_list[0]) == list else  type(in_list[0]) 
+        array_shape = (len(in_list), len(in_list[0]))
+        input_array = asarray(in_list)
+        obj = super(Array2D, cls).__new__(cls, shape = input_array.shape, dtype = input_array.dtype, buffer = input_array)
+        return obj
 
+        
     def __eq__ (self, other) :
         return array_equal(self,other)
 
+    
     def __getitem__(self, index):
         new_index= [None ]* 2
-        if isinstance(index, tuple):
-            if isinstance(index[0], slice):
-                new_index[0]   = slice(index[0].start % self.dim().x, index[0].stop % self.dim().x, index[0].step )
-                new_index[1]   = slice(index[1].start % self.dim().y, index[1].stop % self.dim().y, index[1].step )
-                return super(Array2D, self).__getitem__(new_index)
-        else :
-            raise ValueError("index is {}".format(index)) 
+        try :
+            if isinstance(index, IVec2D):
+                (x,y) = index[:2]
+                raise TypeError
+                return super(Array2D, self).__getitem__([x,y])
+            elif isinstance(index, tuple):
+                if isinstance(index[0], slice):
+                    new_index[0]   = slice(index[0].start % self.dim().x, index[0].stop % self.dim().x, index[0].step )
+                    new_index[1]   = slice(index[1].start % self.dim().y, index[1].stop % self.dim().y, index[1].step )
+                    return super(Array2D, self).__getitem__(tuple(new_index))
+                elif isinstance(index[0], int):
+                    new_index[0]   = index[0] % self.dim().x
+                    new_index[1]   = index[1] % self.dim().y
+                    return super(Array2D, self).__getitem__(tuple(new_index))
+        finally:
             return super(Array2D, self).__getitem__(index)
-      
+            
+            
+    
 
     
 
@@ -119,6 +146,7 @@ class Array2D(ndarray):
                 row   = []
             else :
                 row.append(elem_cls(char))
-        # cast to Array2D
-        return array(items).view(Array2D)
+        # "cast" to Array2D
+        arr = Array2D(items)
+        return arr
 

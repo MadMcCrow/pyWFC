@@ -121,8 +121,8 @@ def findPatternPatternsInGrid(input_grid: Array2D, pattern_size : IVec2D) -> lis
     for i in range(input_grid.dim().x)     :
         for j in range(input_grid.dim().y) :
             top_left     = [ i - floor(pattern_size.x / 2.0) , j - floor(pattern_size.y /2.0) ]
-            bottom_right = [ i + floor(pattern_size.x / 2.0) , j + floor(pattern_size.y /2.0) ]
-            new_pattern = input_grid.sub(top_left, bottom_right).view(Pattern)
+            bottom_right = [ i + floor(pattern_size.x / 2.0) +3, j + floor(pattern_size.y /2.0) +1]
+            new_pattern = input_grid.sub(top_left, bottom_right).view(type = Pattern)
             all_patterns.append(new_pattern)
 
     '''  
@@ -201,7 +201,12 @@ class Cell :
         (ex,ey)  = self.Coord + ((Cell._Dimension -1 ) - Cell._CenterPos)
         for y in range(by, ey + 1)  :
             for x in range(bx,ex + 1)   :
-                grid[IVec2D(x,y)] = Element(pattern[x - bx, y - by]) 
+                print(pattern)
+                grid[x,y] = Element(pattern[x - bx, y - by]) 
+
+    
+    def __hash__(self)  :
+        return hash(self.Coord)
 
         
 class Solver :
@@ -220,8 +225,10 @@ class Solver :
 
     def readInput(self, input_file : str) :
         self.Input = Array2D.arrayFromFile(input_file, Element)
+        elem_list = [item for sublist in self.Input for item in sublist]
+        Element._ElemList = tuple(set(elem_list))
         Cell._PatternLists = findPatternPatternsInGrid( self.Input, self._PatternSize)
-        Element._ElemList = tuple(set(self.Input.tobytes()))
+        
 
     def createGrid(self) :  
         elem_list = list([[Element(*Element._ElemList)]*self._OutputSize[0] ] * self._OutputSize[1] )
@@ -232,7 +239,6 @@ class Solver :
         Cell._CenterPos = self._PatternSize / 2.0
         cells_list = [[Cell(IVec2D(x,y)) for x in range(self._OutputSize.x)] for y in range(self._OutputSize.y)]
         self.Cells = Array2D(cells_list)
-        raise ValueError( "{}".format(self.Cells))
 
     #step 1
     def observe(self) :
@@ -325,7 +331,7 @@ class Solver :
 '''  
 Now we only have to use our solver to actually produce a result :
 ''' 
-Solver._PatternSize = IVec2D(3,3)
+Solver._PatternSize = IVec2D(4,4)
 Solver._OutputSize  = IVec2D(10,10)
 solver = Solver("input")
 solver.run()
